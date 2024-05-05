@@ -2,40 +2,40 @@ package com.makerservplatform.makerserv.controllers;
 
 import com.makerservplatform.makerserv.models.entities.Usuario;
 import com.makerservplatform.makerserv.models.services.validators.UsuarioValidator;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.makerservplatform.makerserv.repositories.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
-@RequestMapping("usuarios")
+@RequestMapping
 public class UsuarioController {
 
-    @GetMapping(path="listaUsuarios")
-    public ArrayList<Usuario> listarUsuarios(){
-        Usuario user1 = new Usuario("Maria dos Santos", "594.511.390-52", "5768-1235", "maria@email.com", "senhaforte", "1968-10-22",  true);
-        Usuario user2 = new Usuario("João Henrique", "174.059.440-19", "5876-3214", "joao@email.com", "teste", "2000-04-14", false);
-        Usuario user3 = new Usuario("Rafael Alves", "555.514.280-36", "4002-8922", "rafael@email.com", "semprefuitriste", "2003-06-15", true);
+    @Autowired
+    private UsuarioRepository usuarioRepo;
 
-        ArrayList<Usuario> usuarios = new ArrayList<Usuario>();
-        usuarios.add(user1);
-        usuarios.add(user2);
-        usuarios.add(user3);
+    @PostMapping("/adicionarUsuario")
+    public ResponseEntity<String> adicionarUsuario(@RequestBody Usuario usuario){
+        if(UsuarioValidator.validaCpf(usuario.getCpf()) && UsuarioValidator.validaSenha(usuario.getSenha())){
+            Usuario UsuarioObj = usuarioRepo.save(usuario);
+            return new ResponseEntity<>("Usuário criado com sucesso!", HttpStatus.CREATED);
+        }
 
-        return usuarios;
-    }
-    @GetMapping(path="testeSenha")
-    public boolean testaSenha(){
-        Usuario usuario1 = new Usuario();
-        usuario1.setSenha("V@ad34");
-        return UsuarioValidator.validaSenha(usuario1.getSenha());
+        return new ResponseEntity<>("Cpf ou senha inválidos!", HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(path="testeCpf")
-    public boolean testeCpf(){
-        Usuario usuario1 = new Usuario();
-        usuario1.setCpf("222.222.222-22");
-        return UsuarioValidator.validaCpf(usuario1.getCpf());
+    @GetMapping("listaUsuarios")
+    public ResponseEntity<List<Usuario>> listarUsuarios(){
+        ArrayList<Usuario> listaUsuarios = new ArrayList<>();
+        usuarioRepo.findAll().forEach(listaUsuarios::add);
+        if(listaUsuarios.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(listaUsuarios, HttpStatus.OK);
     }
 }

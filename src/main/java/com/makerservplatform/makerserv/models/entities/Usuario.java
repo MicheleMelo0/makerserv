@@ -1,7 +1,18 @@
 package com.makerservplatform.makerserv.models.entities;
 
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
+
+@Entity
+@Table(name="Usuarios")
+
 public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     private String nome;
     private String cpf;
     private String telefone;
